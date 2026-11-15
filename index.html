@@ -24,7 +24,7 @@ button.light{background:#e5e7eb;color:#111827}
 .tabs button{flex:1}
 .item{display:grid;grid-template-columns:1fr 105px;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid #e5e7eb}
 .item small{color:#64748b}
-.item input{text-align:right}
+.item input{text-align:right}.item{grid-template-columns:minmax(0,1fr) minmax(105px,150px)}.item small{display:block;margin-top:4px}.item select{padding:8px;font-size:13px;margin-bottom:5px}.item input{padding:9px}
 .full{width:100%;margin-top:14px}
 .hidden{display:none}
 .notice{font-size:13px;color:#64748b;line-height:1.5}
@@ -59,7 +59,7 @@ td:last-child{text-align:right}
 
 <div id="countPage" class="card">
 <h2>New Inventory Count</h2>
-<p class="notice">Enter the quantity currently on hand for each item. Leave an item blank if you are not counting it.</p>
+<p class="notice">Count in cases or, for products with a verified pack size, individual lb, gal, oz, or pieces. Leave blank to skip. Partial cases are allowed.</p>
 
 <label for="employee">Counted By</label>
 <input id="employee" placeholder="Employee name">
@@ -928,6 +928,41 @@ const inventory = [
   ]
 ];
 
+
+// Packaging details are separate from the product name. Blank/unverified
+// pack sizes are left unspecified, never silently assumed to be one case.
+function unpackItem(row, index) {
+  const [category, originalName, orderUnit, supplierSku] = row;
+  let name = originalName, packCount = null, eachSize = null, sizeUnit = "";
+  const match = originalName.match(/\s+(\d+)\s*\/\s*(\d+(?:\.\d+)?)\s*(lb|lbs|#|gal|gallon|gallons|oz|ct)?$/i);
+  if (match) {
+    name = originalName.slice(0, match.index);
+    packCount = Number(match[1]);
+    eachSize = Number(match[2]);
+    const units = {"#":"lb","lbs":"lb","lb":"lb","gal":"gal","gallons":"gal","gallon":"gal","oz":"oz","ct":"each"};
+    sizeUnit = units[(match[3] || "").toLowerCase()] || "";
+  } else {
+    const single = originalName.match(/\s+(\d+(?:\.\d+)?)\s*(lb|lbs|#|gal|gallon|gallons|oz)\b$/i);
+    if (single) {
+      name = originalName.slice(0,single.index);
+      packCount = 1;
+      eachSize = Number(single[1]);
+      sizeUnit = /gal/i.test(single[2]) ? "gal" : /oz/i.test(single[2]) ? "oz" : "lb";
+    }
+  }
+  // #10 cans, count-only packs, etc. remain countable in cases;
+  // volume or weight conversion is not invented.
+  const total = packCount && eachSize ? packCount * eachSize : null;
+  return {id:"spc-"+index,category,name,originalName,orderUnit,supplierSku,packCount,eachSize,sizeUnit,total};
+}
+const catalog = inventory.map(unpackItem);
+function packageLabel(item) {
+  if (!item.packCount || !item.eachSize) return "Pack size not verified";
+  if (!item.sizeUnit) return item.packCount+" × "+item.eachSize+" (unit not verified)";
+  return item.packCount+" × "+item.eachSize+" "+item.sizeUnit+
+    " • "+Number(item.total.toFixed(3))+" "+item.sizeUnit+" per case";
+}
+
 const $ = id => document.getElementById(id);
 
 function escapeHTML(value) {
@@ -957,31 +992,28 @@ $("location").innerHTML = locations.map(
 ).join("");
 
 let currentCategory = "";
-
-$("inventoryItems").innerHTML = inventory.map((item, index) => {
+$("inventoryItems").innerHTML = catalog.map((item, index) => {
   let heading = "";
-
-  if (item[0] !== currentCategory) {
-    currentCategory = item[0];
+  if (item.category !== currentCategory) {
+    currentCategory = item.category;
     heading = `<h3>${escapeHTML(currentCategory)}</h3>`;
   }
-
+  const canCountPieces = !!(item.total && item.sizeUnit);
+  const sub = canCountPieces ? item.sizeUnit : "each";
   return heading + `
     <div class="item">
+      <div><strong>${escapeHTML(item.name)}</strong>
+      <small>${escapeHTML(packageLabel(item))}</small>
+      <small>Supplier item: ${escapeHTML(item.supplierSku || "Not listed")}</small></div>
       <div>
-        ${escapeHTML(item[1])}
-        <small>(${escapeHTML(item[2])})</small>
+      <select id="countUnit${index}" aria-label="Unit for ${escapeHTML(item.name)}">
+        <option value="case">Cases</option>
+        ${canCountPieces ? `<option value="base">${escapeHTML(sub)}</option>` : ""}
+      </select>
+      <input id="quantity${index}" type="number" min="0" step="any" inputmode="decimal" placeholder="0"
+        aria-label="Quantity for ${escapeHTML(item.name)}">
       </div>
-      <input
-        id="quantity${index}"
-        type="number"
-        min="0"
-        step="any"
-        inputmode="decimal"
-        placeholder="0"
-      >
-    </div>
-  `;
+    </div>`;
 }).join("");
 
 function showPage(page) {
@@ -995,12 +1027,25 @@ function showPage(page) {
 }
 
 function saveCount() {
-  const lines = inventory.map((item, index) => ({
-    category: item[0],
-    name: item[1],
-    unit: item[2],
-    quantity: $("quantity" + index).value
-  })).filter(item => item.quantity !== "");
+  const lines = catalog.map((item, index) => {
+    const raw = $("quantity" + index).value.trim();
+    if (raw === "") return null;
+    const value = Number(raw);
+    if (!Number.isFinite(value) || value < 0) return {invalid:true};
+    const selected = $("countUnit" + index).value;
+    const quantityCases = selected === "base" ? value / item.total : value;
+    return {
+      itemId:item.id, category:item.category, name:item.name,
+      originalName:item.originalName, supplierSku:item.supplierSku,
+      packCount:item.packCount, eachSize:item.eachSize, sizeUnit:item.sizeUnit,
+      orderUnit:item.orderUnit, unit:selected === "base" ? item.sizeUnit : "case",
+      quantity:value, quantityCases:Number(quantityCases.toFixed(6))
+    };
+  }).filter(Boolean);
+  if (lines.some(line => line.invalid)) {
+    alert("Enter non-negative quantities only.");
+    return;
+  }
 
   if (!lines.length) {
     alert("Enter at least one inventory quantity.");
@@ -1026,6 +1071,7 @@ function saveCount() {
 
   inventory.forEach((_, index) => {
     $("quantity" + index).value = "";
+    $("countUnit" + index).value = "case";
   });
 
   alert("Inventory count saved successfully.");
@@ -1052,7 +1098,7 @@ function renderHistory() {
         ${count.lines.map(line => `
           <tr>
             <td>${escapeHTML(line.name)}</td>
-            <td>${escapeHTML(line.quantity)} ${escapeHTML(line.unit)}</td>
+            <td>${escapeHTML(line.quantity)} ${escapeHTML(line.unit)}${line.quantityCases != null ? ` (${Number(line.quantityCases.toFixed(3))} cases)` : ""}</td>
           </tr>
         `).join("")}
       </table>
@@ -1084,7 +1130,7 @@ function exportCSV(allLocations) {
 
   const rows = [[
     "Location","Date","Employee","Category",
-    "Item","Unit","Quantity"
+    "Item","Unit","Quantity","Supplier SKU","Pack Count","Each Size","Pack Unit","Equivalent Cases"
   ]];
 
   counts.forEach(count => {
@@ -1096,7 +1142,8 @@ function exportCSV(allLocations) {
         line.category,
         line.name,
         line.unit,
-        line.quantity
+        line.quantity,
+        line.supplierSku || "",line.packCount ?? "",line.eachSize ?? "",line.sizeUnit || "",line.quantityCases ?? ""
       ]);
     });
   });
