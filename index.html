@@ -1,0 +1,330 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SPC Inventory</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f3f4f6;color:#1f2937;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+header{background:#b91c1c;color:white;padding:22px 18px}
+header h1{margin:0;font-size:25px}
+header p{margin:5px 0 0;color:#fee2e2}
+main{max-width:850px;margin:auto;padding:14px}
+.card{background:white;padding:18px;border-radius:13px;margin-bottom:14px;box-shadow:0 2px 9px #0000000b}
+h2{font-size:19px;margin:0 0 12px}
+h3{font-size:16px;margin:20px 0 8px;color:#b91c1c}
+label{display:block;font-weight:600;margin:12px 0 6px}
+input,select{width:100%;padding:12px;font-size:16px;border:1px solid #cbd5e1;border-radius:8px;background:white}
+button{border:0;background:#b91c1c;color:white;padding:12px;border-radius:8px;font-size:15px;font-weight:650;cursor:pointer}
+button.secondary{background:#334155}
+button.light{background:#e5e7eb;color:#111827}
+.tabs{display:flex;gap:7px;margin-top:14px}
+.tabs button{flex:1}
+.item{display:grid;grid-template-columns:1fr 105px;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid #e5e7eb}
+.item small{color:#64748b}
+.item input{text-align:right}
+.full{width:100%;margin-top:14px}
+.hidden{display:none}
+.notice{font-size:13px;color:#64748b;line-height:1.5}
+.store-row{display:flex;justify-content:space-between;gap:12px;padding:13px 0;border-bottom:1px solid #e5e7eb}
+.store-row span{font-size:13px;color:#64748b}
+details{padding:12px 0;border-bottom:1px solid #e5e7eb}
+summary{cursor:pointer}
+table{width:100%;border-collapse:collapse;margin-top:12px;font-size:13px}
+td{padding:9px 5px;border-bottom:1px solid #eee}
+td:last-child{text-align:right}
+</style>
+</head>
+<body>
+
+<header>
+<h1>🍕 SPC Inventory</h1>
+<p>Multi-Location Inventory Management</p>
+</header>
+
+<main>
+
+<div class="card">
+<label for="location">Restaurant Location</label>
+<select id="location"></select>
+
+<div class="tabs">
+<button id="countBtn" onclick="showPage('count')">Count</button>
+<button id="historyBtn" class="secondary" onclick="showPage('history')">History</button>
+<button id="dashboardBtn" class="secondary" onclick="showPage('dashboard')">Dashboard</button>
+</div>
+</div>
+
+<div id="countPage" class="card">
+<h2>New Inventory Count</h2>
+<p class="notice">Enter the quantity currently on hand for each item. Leave an item blank if you are not counting it.</p>
+
+<label for="employee">Counted By</label>
+<input id="employee" placeholder="Employee name">
+
+<div id="inventoryItems"></div>
+
+<button class="full" onclick="saveCount()">Save Inventory Count</button>
+</div>
+
+<div id="historyPage" class="card hidden">
+<h2>Inventory Count History</h2>
+<div id="historyList"></div>
+<button class="full secondary" onclick="exportCSV(false)">Export Location CSV</button>
+</div>
+
+<div id="dashboardPage" class="card hidden">
+<h2>All Locations</h2>
+<p class="notice">Latest inventory counts saved in this browser.</p>
+<div id="dashboardList"></div>
+<button class="full secondary" onclick="exportCSV(true)">Export All Locations CSV</button>
+</div>
+
+<div class="card">
+<p class="notice"><strong>Prototype version:</strong> Counts are stored on this device only. Do not clear Safari website data if you need to retain saved counts. Cloud synchronization and employee accounts will be added in a future version.</p>
+</div>
+
+</main>
+
+<script>
+const locations = [
+  "Jesup",
+  "Richmond Hill",
+  "Ogeechee",
+  "Claxton",
+  "Blackshear"
+];
+
+const inventory = [
+  ["Dough","Small Dough Balls","each"],
+  ["Dough","Large Dough Balls","each"],
+  ["Dough","Jumbo Dough Balls","each"],
+  ["Cheese","Mozzarella","lb"],
+  ["Cheese","Parmesan","lb"],
+  ["Sauces","Pizza Sauce","lb"],
+  ["Sauces","Ranch","bottle"],
+  ["Meats","Pepperoni","lb"],
+  ["Meats","Sausage","lb"],
+  ["Meats","Bacon","lb"],
+  ["Meats","Ham","lb"],
+  ["Meats","Chicken","lb"],
+  ["Vegetables","Mushrooms","lb"],
+  ["Vegetables","Onions","lb"],
+  ["Vegetables","Green Peppers","lb"],
+  ["Vegetables","Black Olives","lb"],
+  ["Vegetables","Jalapeños","lb"],
+  ["Vegetables","Pineapple","lb"],
+  ["Packaging","Small Pizza Boxes","each"],
+  ["Packaging","Large Pizza Boxes","each"],
+  ["Packaging","Jumbo Pizza Boxes","each"],
+  ["Packaging","Wing Boxes","each"],
+  ["Packaging","Napkins","pack"],
+  ["Desserts","Cookies","each"],
+  ["Desserts","Cannoli","each"]
+];
+
+const $ = id => document.getElementById(id);
+
+function escapeHTML(value) {
+  return String(value).replace(/[&<>"']/g, c => ({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    '"':"&quot;",
+    "'":"&#39;"
+  })[c]);
+}
+
+function getCounts() {
+  try {
+    return JSON.parse(localStorage.getItem("spc_inventory_counts") || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function setCounts(counts) {
+  localStorage.setItem("spc_inventory_counts", JSON.stringify(counts));
+}
+
+$("location").innerHTML = locations.map(
+  name => `<option>${escapeHTML(name)}</option>`
+).join("");
+
+let currentCategory = "";
+
+$("inventoryItems").innerHTML = inventory.map((item, index) => {
+  let heading = "";
+
+  if (item[0] !== currentCategory) {
+    currentCategory = item[0];
+    heading = `<h3>${escapeHTML(currentCategory)}</h3>`;
+  }
+
+  return heading + `
+    <div class="item">
+      <div>
+        ${escapeHTML(item[1])}
+        <small>(${escapeHTML(item[2])})</small>
+      </div>
+      <input
+        id="quantity${index}"
+        type="number"
+        min="0"
+        step="any"
+        inputmode="decimal"
+        placeholder="0"
+      >
+    </div>
+  `;
+}).join("");
+
+function showPage(page) {
+  ["count","history","dashboard"].forEach(name => {
+    $(name + "Page").classList.toggle("hidden", name !== page);
+    $(name + "Btn").className = name === page ? "" : "secondary";
+  });
+
+  if (page === "history") renderHistory();
+  if (page === "dashboard") renderDashboard();
+}
+
+function saveCount() {
+  const lines = inventory.map((item, index) => ({
+    category: item[0],
+    name: item[1],
+    unit: item[2],
+    quantity: $("quantity" + index).value
+  })).filter(item => item.quantity !== "");
+
+  if (!lines.length) {
+    alert("Enter at least one inventory quantity.");
+    return;
+  }
+
+  const counts = getCounts();
+
+  counts.unshift({
+    id: Date.now(),
+    location: $("location").value,
+    employee: $("employee").value.trim(),
+    date: new Date().toISOString(),
+    lines: lines
+  });
+
+  try {
+    setCounts(counts);
+  } catch {
+    alert("Unable to save. Check Safari storage settings.");
+    return;
+  }
+
+  inventory.forEach((_, index) => {
+    $("quantity" + index).value = "";
+  });
+
+  alert("Inventory count saved successfully.");
+  showPage("history");
+}
+
+function renderHistory() {
+  const location = $("location").value;
+  const counts = getCounts().filter(c => c.location === location);
+
+  if (!counts.length) {
+    $("historyList").innerHTML = "<p>No inventory counts yet.</p>";
+    return;
+  }
+
+  $("historyList").innerHTML = counts.map(count => `
+    <details>
+      <summary>
+        <strong>${new Date(count.date).toLocaleString()}</strong>
+        — ${escapeHTML(count.employee || "Unnamed")}
+        (${count.lines.length} items)
+      </summary>
+      <table>
+        ${count.lines.map(line => `
+          <tr>
+            <td>${escapeHTML(line.name)}</td>
+            <td>${escapeHTML(line.quantity)} ${escapeHTML(line.unit)}</td>
+          </tr>
+        `).join("")}
+      </table>
+    </details>
+  `).join("");
+}
+
+function renderDashboard() {
+  const counts = getCounts();
+
+  $("dashboardList").innerHTML = locations.map(location => {
+    const latest = counts.find(c => c.location === location);
+
+    return `
+      <div class="store-row">
+        <strong>${escapeHTML(location)}</strong>
+        <span>${latest
+          ? new Date(latest.date).toLocaleDateString()
+          : "No counts yet"}</span>
+      </div>
+    `;
+  }).join("");
+}
+
+function exportCSV(allLocations) {
+  const counts = getCounts().filter(
+    c => allLocations || c.location === $("location").value
+  );
+
+  const rows = [[
+    "Location","Date","Employee","Category",
+    "Item","Unit","Quantity"
+  ]];
+
+  counts.forEach(count => {
+    count.lines.forEach(line => {
+      rows.push([
+        count.location,
+        count.date,
+        count.employee,
+        line.category,
+        line.name,
+        line.unit,
+        line.quantity
+      ]);
+    });
+  });
+
+  const csv = rows.map(row =>
+    row.map(value =>
+      '"' + String(value ?? "").replace(/"/g, '""') + '"'
+    ).join(",")
+  ).join("\r\n");
+
+  const blob = new Blob([csv], {type:"text/csv"});
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+
+  link.href = url;
+  link.download = allLocations
+    ? "SPC-All-Locations.csv"
+    : "SPC-" + $("location").value.replace(/ /g,"-") + ".csv";
+
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+$("location").addEventListener("change", () => {
+  renderHistory();
+  renderDashboard();
+});
+</script>
+
+</body>
+</html>
