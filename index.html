@@ -98,31 +98,834 @@ const locations = [
 ];
 
 const inventory = [
-  ["Dough","Small Dough Balls","each"],
-  ["Dough","Large Dough Balls","each"],
-  ["Dough","Jumbo Dough Balls","each"],
-  ["Cheese","Mozzarella","lb"],
-  ["Cheese","Parmesan","lb"],
-  ["Sauces","Pizza Sauce","lb"],
-  ["Sauces","Ranch","bottle"],
-  ["Meats","Pepperoni","lb"],
-  ["Meats","Sausage","lb"],
-  ["Meats","Bacon","lb"],
-  ["Meats","Ham","lb"],
-  ["Meats","Chicken","lb"],
-  ["Vegetables","Mushrooms","lb"],
-  ["Vegetables","Onions","lb"],
-  ["Vegetables","Green Peppers","lb"],
-  ["Vegetables","Black Olives","lb"],
-  ["Vegetables","Jalapeños","lb"],
-  ["Vegetables","Pineapple","lb"],
-  ["Packaging","Small Pizza Boxes","each"],
-  ["Packaging","Large Pizza Boxes","each"],
-  ["Packaging","Jumbo Pizza Boxes","each"],
-  ["Packaging","Wing Boxes","each"],
-  ["Packaging","Napkins","pack"],
-  ["Desserts","Cookies","each"],
-  ["Desserts","Cannoli","each"]
+  [
+    "Produce",
+    "Yellow Onions 1/50",
+    "case",
+    "0000020"
+  ],
+  [
+    "Produce",
+    "Green Peppers 1/25 lb",
+    "case",
+    "0000006"
+  ],
+  [
+    "Produce",
+    "Whole Mushrooms 1/10 lb",
+    "case",
+    "0000012"
+  ],
+  [
+    "Produce",
+    "Romaine Lettuce 1/24 ct",
+    "case",
+    "0000004"
+  ],
+  [
+    "Produce",
+    "Baby Spinach 1/4 lb",
+    "case",
+    "0000049"
+  ],
+  [
+    "Produce",
+    "Sun-Dried Tomatoes 1/5 lb",
+    "case",
+    "600401"
+  ],
+  [
+    "Produce",
+    "Roma Tomatoes 25 lb",
+    "case",
+    "0000008"
+  ],
+  [
+    "Produce",
+    "Sliced Banana Peppers 4/1 gal",
+    "case",
+    "5060146"
+  ],
+  [
+    "Produce",
+    "Sliced Jalapeños 4/1 gal",
+    "case",
+    "5060148"
+  ],
+  [
+    "Produce",
+    "Sliced Green Olives 6/#10",
+    "case",
+    "1400222"
+  ],
+  [
+    "Produce",
+    "Sliced Black Olives 6/#10",
+    "case",
+    "1400210"
+  ],
+  [
+    "Produce",
+    "Pineapple Tidbits 6/#10",
+    "case",
+    "5040779"
+  ],
+  [
+    "Produce",
+    "Sliced Almonds 2/2.5 lb",
+    "case",
+    "336546"
+  ],
+  [
+    "Produce",
+    "Shredded Coconut 1/10 lb",
+    "case",
+    "548177"
+  ],
+  [
+    "Produce",
+    "Dried Cranberries 1/10 lb",
+    "case",
+    "466505"
+  ],
+  [
+    "Produce",
+    "Black Beans 6/15 oz",
+    "case",
+    ""
+  ],
+  [
+    "Produce",
+    "Pickle Spears 5 gal",
+    "bucket",
+    "5130611"
+  ],
+  [
+    "Produce",
+    "Pepperoncini 4/1 gal",
+    "case",
+    "5060100"
+  ],
+  [
+    "Produce",
+    "Artichoke Hearts 6/#10",
+    "case",
+    "5130361"
+  ],
+  [
+    "Dairy",
+    "Feta Cheese Crumbles 2/5 lb",
+    "case",
+    "0800381"
+  ],
+  [
+    "Dairy",
+    "Garlic Butter Cups 96 ct",
+    "case",
+    "4750430"
+  ],
+  [
+    "Dairy",
+    "Salted Butter 36/1 lb",
+    "case",
+    "0920955"
+  ],
+  [
+    "Dairy",
+    "Grande Mozzarella 6/5 lb",
+    "case",
+    "0400009"
+  ],
+  [
+    "Dairy",
+    "Cream Cheese Icing 18 lb",
+    "case",
+    ""
+  ],
+  [
+    "Dairy",
+    "Grated Parmesan 1/5 lb",
+    "case",
+    "0800096"
+  ],
+  [
+    "Dairy",
+    "Parmesan Packets 200/3 g",
+    "case",
+    "2000098"
+  ],
+  [
+    "Dairy",
+    "Ricotta Whole Milk 6/3 lb",
+    "case",
+    "0900040"
+  ],
+  [
+    "Dairy",
+    "Sour Cream Packets 100 ct",
+    "case",
+    "5004548"
+  ],
+  [
+    "Sauces",
+    "Pizza Sauce 6/6.68 lb",
+    "case",
+    "1000762"
+  ],
+  [
+    "Sauces",
+    "Basil Pesto 30 oz",
+    "container",
+    "5240885"
+  ],
+  [
+    "Sauces",
+    "Teriyaki Glaze 6/5 lb",
+    "case",
+    "5002273"
+  ],
+  [
+    "Sauces",
+    "Mild Wing Sauce 4/1 gal",
+    "case",
+    "5120928"
+  ],
+  [
+    "Sauces",
+    "Hot Wing Sauce 4/1 gal",
+    "case",
+    "5120924"
+  ],
+  [
+    "Sauces",
+    "Kick'n Bourbon 4/64 oz",
+    "case",
+    "5120090"
+  ],
+  [
+    "Sauces",
+    "Garlic Parmesan 4/64 oz",
+    "case",
+    "5120944"
+  ],
+  [
+    "Sauces",
+    "Mango Habanero 4/64 oz",
+    "case",
+    "4700346"
+  ],
+  [
+    "Sauces",
+    "BBQ Sauce 4/1 gal",
+    "case",
+    "5120920"
+  ],
+  [
+    "Sauces",
+    "Honey Mustard 1 gal",
+    "gallon",
+    "4700499"
+  ],
+  [
+    "Sauces",
+    "Mayonnaise Packets 210 ct",
+    "case",
+    "2060500"
+  ],
+  [
+    "Sauces",
+    "Blue Cheese Cups 100 ct",
+    "case",
+    "4753057"
+  ],
+  [
+    "Sauces",
+    "Ranch Cups 100 ct",
+    "case",
+    "4700325"
+  ],
+  [
+    "Sauces",
+    "Thousand Island Cups 60 ct",
+    "case",
+    "4750483"
+  ],
+  [
+    "Sauces",
+    "Honey Mustard Cups 60 ct",
+    "case",
+    "4750449"
+  ],
+  [
+    "Sauces",
+    "Creamy Italian Cups 60 ct",
+    "case",
+    "4750485"
+  ],
+  [
+    "Sauces",
+    "Balsamic Vinaigrette Cups 60 ct",
+    "case",
+    "4750804"
+  ],
+  [
+    "Sauces",
+    "Greek Dressing Cups 60 ct",
+    "case",
+    "4750490"
+  ],
+  [
+    "Sauces",
+    "Caesar Dressing Cups 60 ct",
+    "case",
+    "4750488"
+  ],
+  [
+    "Sauces",
+    "Country French Cups 60 ct",
+    "case",
+    "4750487"
+  ],
+  [
+    "Meats",
+    "Bacon Chips 2/5 lb",
+    "case",
+    "4000240"
+  ],
+  [
+    "Meats",
+    "Sliced Ham 12/1 lb",
+    "case",
+    "4600129"
+  ],
+  [
+    "Meats",
+    "Italian Sausage 3/5 lb",
+    "case",
+    "4001056"
+  ],
+  [
+    "Meats",
+    "Hormel Pepperoni 2/12.5 lb",
+    "case",
+    "4600163"
+  ],
+  [
+    "Meats",
+    "Beef Meatballs 2/5 lb",
+    "case",
+    "4010004"
+  ],
+  [
+    "Meats",
+    "Anchovies 28 oz",
+    "container",
+    "440150"
+  ],
+  [
+    "Meats",
+    "Raw Pork Butt 10 lb",
+    "case",
+    "4000123"
+  ],
+  [
+    "Meats",
+    "Cooked Pork 4 oz Packs",
+    "pack",
+    ""
+  ],
+  [
+    "Meats",
+    "Steak Portions 40/4 oz",
+    "case",
+    "4000422"
+  ],
+  [
+    "Meats",
+    "Cooked Steak 4 oz Packs",
+    "pack",
+    ""
+  ],
+  [
+    "Meats",
+    "Raw Chicken Breasts 4/10 lb",
+    "case",
+    "3902165"
+  ],
+  [
+    "Meats",
+    "Cooked Chicken 4 oz Packs",
+    "pack",
+    ""
+  ],
+  [
+    "Meats",
+    "Raw Chicken Wings 4/10 lb",
+    "case",
+    "4801209"
+  ],
+  [
+    "Meats",
+    "Cooked Wings 6 ct Packs",
+    "pack",
+    ""
+  ],
+  [
+    "Dry Goods",
+    "Cinnamon 12.5 oz",
+    "container",
+    "2000056"
+  ],
+  [
+    "Dry Goods",
+    "Crushed Red Pepper Packets 200 ct",
+    "case",
+    "2000099"
+  ],
+  [
+    "Dry Goods",
+    "High-Gluten Flour 25 lb",
+    "bag",
+    "1510024"
+  ],
+  [
+    "Dry Goods",
+    "Lemon Pepper 30 oz",
+    "container",
+    "2005900"
+  ],
+  [
+    "Dry Goods",
+    "Light Brown Sugar 12/1 lb",
+    "case",
+    "00018069"
+  ],
+  [
+    "Dry Goods",
+    "Ground Black Pepper 5 lb",
+    "container",
+    "00136132"
+  ],
+  [
+    "Dry Goods",
+    "Ground Cumin 1 lb",
+    "container",
+    "00052623"
+  ],
+  [
+    "Dry Goods",
+    "Oregano 5 lb",
+    "container",
+    "00140177"
+  ],
+  [
+    "Dry Goods",
+    "Chili Powder 18 oz",
+    "container",
+    "00136194"
+  ],
+  [
+    "Dry Goods",
+    "Paprika 5 lb",
+    "container",
+    ""
+  ],
+  [
+    "Dry Goods",
+    "Granulated Garlic 5 lb",
+    "container",
+    "10097165"
+  ],
+  [
+    "Dry Goods",
+    "Garlic Salt 33 oz",
+    "container",
+    ""
+  ],
+  [
+    "Dry Goods",
+    "Taco Seasoning 22 oz",
+    "container",
+    ""
+  ],
+  [
+    "Dry Goods",
+    "Rub 25 lb Bucket",
+    "bucket",
+    ""
+  ],
+  [
+    "Dry Goods",
+    "Sugar 50 lb",
+    "bag",
+    "2020055"
+  ],
+  [
+    "Dry Goods",
+    "Yeast 20/16 oz",
+    "case",
+    "5000522"
+  ],
+  [
+    "Dry Goods",
+    "Salt 25 lb",
+    "bag",
+    "2040051"
+  ],
+  [
+    "Other Food",
+    "Lasagna Sheets 40/4 oz",
+    "case",
+    "4100209"
+  ],
+  [
+    "Other Food",
+    "14-inch Thin Crust 30 ct",
+    "case",
+    "3802008"
+  ],
+  [
+    "Other Food",
+    "10-inch Cauliflower Crust",
+    "case",
+    "3800229"
+  ],
+  [
+    "Other Food",
+    "8-inch Sub Buns",
+    "case",
+    "3700171"
+  ],
+  [
+    "Other Food",
+    "Pizza Dough Balls",
+    "tray",
+    ""
+  ],
+  [
+    "Other Food",
+    "Croutons 8/2.5 lb",
+    "case",
+    "5030102"
+  ],
+  [
+    "Other Food",
+    "Pan Spray 6/17 oz",
+    "case",
+    "3500109"
+  ],
+  [
+    "Other Food",
+    "Chips 104/1 oz",
+    "case",
+    "5002226"
+  ],
+  [
+    "Other Food",
+    "Pomace Oil 6/1 gal",
+    "case",
+    "3500014"
+  ],
+  [
+    "Other Food",
+    "Cheesecake 14 Slices",
+    "cake",
+    "4401588"
+  ],
+  [
+    "Other Food",
+    "Chocolate Chip Cookies 160 ct",
+    "case",
+    "4400069"
+  ],
+  [
+    "Other Food",
+    "Strawberry Topping 3/118 oz",
+    "case",
+    "2063118"
+  ],
+  [
+    "Other Food",
+    "Raspberry Sauce 12/19.5 oz",
+    "case",
+    "5001444"
+  ],
+  [
+    "Paper Supplies",
+    "10-inch Pizza Boxes 50 ct",
+    "case",
+    "6500003"
+  ],
+  [
+    "Paper Supplies",
+    "14-inch Pizza Boxes 50 ct",
+    "case",
+    "6500041"
+  ],
+  [
+    "Paper Supplies",
+    "16-inch Pizza Boxes 50 ct",
+    "case",
+    "6500019"
+  ],
+  [
+    "Paper Supplies",
+    "18-inch Pizza Boxes 50 ct",
+    "case",
+    "6500091"
+  ],
+  [
+    "Paper Supplies",
+    "Small Hinged Trays",
+    "case",
+    "9599986"
+  ],
+  [
+    "Paper Supplies",
+    "Styro Plates 500 ct",
+    "case",
+    "7652360"
+  ],
+  [
+    "Paper Supplies",
+    "9-inch Styro Boxes 150 ct",
+    "case",
+    "2100833"
+  ],
+  [
+    "Paper Supplies",
+    "24-inch Film Wrap 2000 ft",
+    "roll",
+    "6000111"
+  ],
+  [
+    "Paper Supplies",
+    "16 oz Foam Cups",
+    "case",
+    "7550072"
+  ],
+  [
+    "Paper Supplies",
+    "16 oz Cup Lids",
+    "case",
+    "7570135"
+  ],
+  [
+    "Paper Supplies",
+    "2 oz Portion Cups",
+    "case",
+    "7670106"
+  ],
+  [
+    "Paper Supplies",
+    "2 oz Portion Cup Lids",
+    "case",
+    ""
+  ],
+  [
+    "Paper Supplies",
+    "Pizza Savers 1000 ct",
+    "case",
+    "6500016"
+  ],
+  [
+    "Paper Supplies",
+    "Foil Roll 18-inch 500 ft",
+    "roll",
+    "5500015"
+  ],
+  [
+    "Paper Supplies",
+    "Half-Size Steamtable Pans",
+    "case",
+    "5500045"
+  ],
+  [
+    "Paper Supplies",
+    "Half-Size Steamtable Lids",
+    "case",
+    "5500050"
+  ],
+  [
+    "Paper Supplies",
+    "Foil Pop-Up Sheets",
+    "case",
+    "5500040"
+  ],
+  [
+    "Paper Supplies",
+    "Large Nitrile Gloves",
+    "case",
+    "8001289"
+  ],
+  [
+    "Paper Supplies",
+    "Wrapped Straws",
+    "case",
+    "6000800"
+  ],
+  [
+    "Paper Supplies",
+    "Toilet Paper",
+    "case",
+    "6000275"
+  ],
+  [
+    "Paper Supplies",
+    "Paper Towels",
+    "case",
+    "9860018"
+  ],
+  [
+    "Paper Supplies",
+    "Cutlery Packs 250 ct",
+    "case",
+    "6000000"
+  ],
+  [
+    "Paper Supplies",
+    "Napkins",
+    "case",
+    "6000335"
+  ],
+  [
+    "Paper Supplies",
+    "Thank You Bags 1000 ct",
+    "case",
+    "7001258"
+  ],
+  [
+    "Paper Supplies",
+    "Printer Ink HP 26X",
+    "each",
+    ""
+  ],
+  [
+    "Paper Supplies",
+    "Thermal Receipt Paper",
+    "case",
+    ""
+  ],
+  [
+    "Cleaning",
+    "Bleach 4/1 gal",
+    "case",
+    "8000049"
+  ],
+  [
+    "Cleaning",
+    "Terry Cloth Bar Towels",
+    "pack",
+    ""
+  ],
+  [
+    "Cleaning",
+    "58 gal Trash Bags",
+    "case",
+    "6000025"
+  ],
+  [
+    "Cleaning",
+    "Dish Detergent 4/1 gal",
+    "case",
+    "8000065"
+  ],
+  [
+    "Cleaning",
+    "Mop Heads",
+    "case",
+    "8066636"
+  ],
+  [
+    "Cleaning",
+    "Stainless Steel Scrubbers",
+    "case",
+    "8066621"
+  ],
+  [
+    "Beverages",
+    "Diet Pepsi 12 oz Cans",
+    "case",
+    "115584"
+  ],
+  [
+    "Beverages",
+    "Pepsi 12 oz Cans",
+    "case",
+    "146533"
+  ],
+  [
+    "Beverages",
+    "Dr Pepper 12 oz Cans",
+    "case",
+    "115583"
+  ],
+  [
+    "Beverages",
+    "Starry 12 oz Cans",
+    "case",
+    "116309"
+  ],
+  [
+    "Beverages",
+    "Brisk Lemon Tea 12 oz Cans",
+    "case",
+    "115586"
+  ],
+  [
+    "Beverages",
+    "Diet Mountain Dew Cans",
+    "case",
+    "115586"
+  ],
+  [
+    "Beverages",
+    "Mountain Dew Cans",
+    "case",
+    "115586"
+  ],
+  [
+    "Beverages",
+    "Aquafina Water",
+    "case",
+    "115586"
+  ],
+  [
+    "Beverages",
+    "Diet Pepsi 2 Liters",
+    "case",
+    "116150"
+  ],
+  [
+    "Beverages",
+    "Pepsi 2 Liters",
+    "case",
+    "116366"
+  ],
+  [
+    "Beverages",
+    "Dr Pepper 2 Liters",
+    "case",
+    "11/9/62"
+  ],
+  [
+    "Beverages",
+    "Starry 2 Liters",
+    "case",
+    "11/7/62"
+  ],
+  [
+    "Beverages",
+    "Dole Strawberry Lemonade 2 Liters",
+    "case",
+    "11/24/62"
+  ],
+  [
+    "Beverages",
+    "Mountain Dew 2 Liters",
+    "case",
+    "11/17/62"
+  ]
 ];
 
 const $ = id => document.getElementById(id);
