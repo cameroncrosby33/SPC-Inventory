@@ -39,6 +39,49 @@ details{padding:17px 0;border-bottom:1px solid var(--line)}summary{cursor:pointe
 .footnote{background:transparent;border:0;box-shadow:none;padding:12px 4px}.footnote .notice{font-size:11px}
 @media(max-width:720px){header{padding:0 16px}.topbar{min-height:70px}.brandmark{width:40px;height:40px;border-radius:12px}.brand h1{font-size:17px}.status{font-size:10px;padding:7px 9px}main{padding:22px 13px 55px}.workspace{display:block}.side{position:static}.side .card{padding:15px}.tabs{flex-direction:row;margin-top:12px}.tabs button{text-align:center;font-size:13px;padding:11px 6px}.card{padding:18px;border-radius:15px}.intro{margin-bottom:17px}.item{grid-template-columns:minmax(0,1fr) 94px;gap:8px}.item strong{font-size:13px}.item input{font-size:16px;padding:11px 5px}.count-toolbar{flex-wrap:wrap}.count-toolbar input{flex-basis:100%}.savebar{bottom:8px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition:none!important}}
+
+
+/* Canvas Design: editorial utility, precise hierarchy, restrained restaurant red */
+:root{--ink:#202529;--muted:#737b83;--line:#e8e6e2;--paper:#f6f5f2;--red:#bd2633;--red-dark:#991c27;--shadow:0 5px 20px rgba(39,32,24,.035)}
+body{background:var(--paper);color:var(--ink)}
+header{border-bottom:1px solid #eae7e1}
+.topbar{min-height:78px}
+.brandmark{border-radius:12px;font-size:17px;letter-spacing:-1px;background:#bd2633;box-shadow:0 4px 12px #bd263320}
+.brand h1{font-size:18px;letter-spacing:-.45px}
+.brand p{letter-spacing:.12em;font-size:10px}
+.intro{padding:9px 0 2px}.intro h2{font-size:clamp(28px,4vw,38px);letter-spacing:-1.45px}
+.intro p{font-size:14px}
+.eyebrow{color:#a12b32}
+.card{box-shadow:var(--shadow);border-color:var(--line);border-radius:16px}
+.side .card{border-top:3px solid #bd2633}
+.tabs button{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.tabs button::after{content:"›";font-size:20px;font-weight:400;line-height:1;opacity:.65}
+.tabs button.secondary{background:transparent;color:#56616a}
+.tabs button.secondary:hover{background:#f4f2ee}
+.tabs button:not(.secondary){background:#bd2633;color:#fff}
+#countPage{border-top:3px solid #bd2633}
+.panel-heading{padding-bottom:17px;border-bottom:1px solid var(--line)}
+.panel-heading h2{font-size:23px}
+.count-toolbar{padding:9px 0 13px;border-bottom:1px solid var(--line)}
+.count-toolbar input{background:#f9f8f6;border-color:#e9e6e0}
+.count-summary{background:#f3f0ea;padding:8px 10px;border-radius:999px;color:#655e56}
+h3{background:transparent;border-bottom:1px solid #e7e4de;border-radius:0;padding:12px 2px 11px;margin-top:27px;color:#9c2d35;font-size:11px}
+.item{padding:16px 4px}
+.item strong{letter-spacing:-.1px}
+.item small{color:#81858b}
+.item input{border-radius:9px;background:#fbfaf8;border:1px solid #e3e0da;font-size:17px}
+.item input:focus{background:#fff}
+.savebar{border:1px solid #ebe8e3;box-shadow:0 12px 30px #251e171a}
+.savebar button{font-size:15px;letter-spacing:.01em}
+.store-row:last-child,details:last-child,.item:last-child{border-bottom:0}
+#historyPage>h2,#dashboardPage>h2{font-size:23px}
+#historyList,#dashboardList{margin-top:18px}
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid #d87d82;outline-offset:3px}
+.empty-state{text-align:center;border:1px dashed #d8d5ce;border-radius:13px;padding:30px 18px;color:#737b83;margin:16px 0}
+.empty-state strong{display:block;color:#2a3035;margin-bottom:7px;font-size:15px}
+.item:focus-within{background:#fffdfb}
+@media(min-width:721px){.workspace{grid-template-columns:230px minmax(0,1fr);gap:26px}.side{top:24px}.content{min-width:0}}
+@media(max-width:720px){.topbar{min-height:72px}.brand p{font-size:9px}.status{max-width:117px;white-space:normal;line-height:1.25}.intro{padding-top:3px}.intro h2{font-size:29px}.side .card{border-top:0}.tabs button{justify-content:center}.tabs button::after{display:none}.count-toolbar{gap:8px}.count-summary{font-size:11px}.item{padding:14px 0}.item small{font-size:10px}.savebar{bottom:max(8px,env(safe-area-inset-bottom))}}
 </style>
 </head>
 <body>
@@ -49,8 +92,8 @@ details{padding:17px 0;border-bottom:1px solid var(--line)}summary{cursor:pointe
 <aside class="side"><div class="card"><label for="location">CURRENT LOCATION</label><select id="location"></select><nav class="tabs" aria-label="Inventory sections"><button id="countBtn" onclick="showPage('count')">Count</button><button id="historyBtn" class="secondary" onclick="showPage('history')">History</button><button id="dashboardBtn" class="secondary" onclick="showPage('dashboard')">Overview</button></nav></div></aside>
 <div class="content">
 <section id="countPage" class="card"><div class="panel-heading"><div><h2>New inventory count</h2><p class="notice">Enter cases on hand. Use decimals for partial cases (e.g., 1.5).</p></div></div>
-<div class="count-toolbar"><input id="itemSearch" type="search" placeholder="Search products or supplier numbers…" aria-label="Search inventory items"><span id="countSummary" class="count-summary">0 entered</span></div>
-<div id="inventoryItems"></div><div class="savebar"><button class="full" onclick="saveCount()">Save inventory count</button></div></section>
+<div class="count-toolbar"><input id="itemSearch" type="search" placeholder="Search products or supplier numbers…" aria-label="Search inventory items"><span id="countSummary" class="count-summary" aria-live="polite">0 entered</span></div>
+<div id="inventoryItems"></div><div id="searchEmpty" class="empty-state hidden"><strong>No matching products</strong>Try a different product name or supplier number.</div><div class="savebar"><button class="full" onclick="saveCount()">Save inventory count</button></div></section>
 <section id="historyPage" class="card hidden"><h2>Count history</h2><p class="notice">Previously saved inventory counts for this location.</p><div id="historyList"></div><button class="full secondary" onclick="exportCSV(false)">Export location CSV</button></section>
 <section id="dashboardPage" class="card hidden"><h2>Location overview</h2><p class="notice">Most recent counts saved on this device.</p><div id="dashboardList"></div><button class="full secondary" onclick="exportCSV(true)">Export all locations CSV</button></section>
 <div class="card footnote"><p class="notice"><strong>Local storage:</strong> Inventory is saved in this browser, not synchronized between devices. Keep Safari website data to preserve saved counts.</p></div>
@@ -997,6 +1040,7 @@ function refreshCountView() {
   if (next) next.classList.toggle("hidden", next.dataset.visible !== "yes");
   const entered = catalog.reduce((n,_,i)=>n+($("quantity"+i).value.trim() !== "" ? 1:0),0);
   $("countSummary").textContent = entered + " entered · " + visible + " shown";
+  $("searchEmpty").classList.toggle("hidden",visible !== 0);
 }
 $("itemSearch").addEventListener("input",refreshCountView);
 $("inventoryItems").addEventListener("input",refreshCountView);
@@ -1068,7 +1112,7 @@ function renderHistory() {
   const counts = getCounts().filter(c => c.location === location);
 
   if (!counts.length) {
-    $("historyList").innerHTML = "<p>No inventory counts yet.</p>";
+    $("historyList").innerHTML = '<div class="empty-state"><strong>No counts saved yet</strong>Enter inventory quantities and save your first count for this location.</div>';
     return;
   }
 
