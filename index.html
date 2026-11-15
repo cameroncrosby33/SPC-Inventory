@@ -24,7 +24,7 @@ button.light{background:#e5e7eb;color:#111827}
 .tabs button{flex:1}
 .item{display:grid;grid-template-columns:1fr 105px;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid #e5e7eb}
 .item small{color:#64748b}
-.item input{text-align:right}.item{grid-template-columns:minmax(0,1fr) minmax(105px,150px)}.item small{display:block;margin-top:4px}.item select{padding:8px;font-size:13px;margin-bottom:5px}.item input{padding:9px}
+.item input{text-align:right}.item{grid-template-columns:minmax(0,1fr) minmax(105px,150px)}.item small{display:block;margin-top:4px}.item input{padding:9px}
 .full{width:100%;margin-top:14px}
 .hidden{display:none}
 .notice{font-size:13px;color:#64748b;line-height:1.5}
@@ -59,10 +59,8 @@ td:last-child{text-align:right}
 
 <div id="countPage" class="card">
 <h2>New Inventory Count</h2>
-<p class="notice">Count in cases or, for products with a verified pack size, individual lb, gal, oz, or pieces. Leave blank to skip. Partial cases are allowed.</p>
+<p class="notice">Enter the number of cases on hand, including decimals (for example, 1.5 for one and a half cases). Leave blank to skip an item.</p>
 
-<label for="employee">Counted By</label>
-<input id="employee" placeholder="Employee name">
 
 <div id="inventoryItems"></div>
 
@@ -998,21 +996,13 @@ $("inventoryItems").innerHTML = catalog.map((item, index) => {
     currentCategory = item.category;
     heading = `<h3>${escapeHTML(currentCategory)}</h3>`;
   }
-  const canCountPieces = !!(item.total && item.sizeUnit);
-  const sub = canCountPieces ? item.sizeUnit : "each";
   return heading + `
     <div class="item">
       <div><strong>${escapeHTML(item.name)}</strong>
       <small>${escapeHTML(packageLabel(item))}</small>
       <small>Supplier item: ${escapeHTML(item.supplierSku || "Not listed")}</small></div>
-      <div>
-      <select id="countUnit${index}" aria-label="Unit for ${escapeHTML(item.name)}">
-        <option value="case">Cases</option>
-        ${canCountPieces ? `<option value="base">${escapeHTML(sub)}</option>` : ""}
-      </select>
       <input id="quantity${index}" type="number" min="0" step="any" inputmode="decimal" placeholder="0"
-        aria-label="Quantity for ${escapeHTML(item.name)}">
-      </div>
+        aria-label="Cases of ${escapeHTML(item.name)}">
     </div>`;
 }).join("");
 
@@ -1032,13 +1022,12 @@ function saveCount() {
     if (raw === "") return null;
     const value = Number(raw);
     if (!Number.isFinite(value) || value < 0) return {invalid:true};
-    const selected = $("countUnit" + index).value;
-    const quantityCases = selected === "base" ? value / item.total : value;
+    const quantityCases = value;
     return {
       itemId:item.id, category:item.category, name:item.name,
       originalName:item.originalName, supplierSku:item.supplierSku,
       packCount:item.packCount, eachSize:item.eachSize, sizeUnit:item.sizeUnit,
-      orderUnit:item.orderUnit, unit:selected === "base" ? item.sizeUnit : "case",
+      orderUnit:item.orderUnit, unit:"case",
       quantity:value, quantityCases:Number(quantityCases.toFixed(6))
     };
   }).filter(Boolean);
@@ -1057,7 +1046,7 @@ function saveCount() {
   counts.unshift({
     id: Date.now(),
     location: $("location").value,
-    employee: $("employee").value.trim(),
+    employee: "",
     date: new Date().toISOString(),
     lines: lines
   });
@@ -1071,7 +1060,6 @@ function saveCount() {
 
   inventory.forEach((_, index) => {
     $("quantity" + index).value = "";
-    $("countUnit" + index).value = "case";
   });
 
   alert("Inventory count saved successfully.");
@@ -1091,7 +1079,7 @@ function renderHistory() {
     <details>
       <summary>
         <strong>${new Date(count.date).toLocaleString()}</strong>
-        — ${escapeHTML(count.employee || "Unnamed")}
+        ${count.employee ? "— " + escapeHTML(count.employee) : ""}
         (${count.lines.length} items)
       </summary>
       <table>
