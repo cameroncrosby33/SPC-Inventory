@@ -82,6 +82,14 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 .item:focus-within{background:#fffdfb}
 @media(min-width:721px){.workspace{grid-template-columns:230px minmax(0,1fr);gap:26px}.side{top:24px}.content{min-width:0}}
 @media(max-width:720px){.topbar{min-height:72px}.brand p{font-size:9px}.status{max-width:117px;white-space:normal;line-height:1.25}.intro{padding-top:3px}.intro h2{font-size:29px}.side .card{border-top:0}.tabs button{justify-content:center}.tabs button::after{display:none}.count-toolbar{gap:8px}.count-summary{font-size:11px}.item{padding:14px 0}.item small{font-size:10px}.savebar{bottom:max(8px,env(safe-area-inset-bottom))}}
+
+.sync-card{padding:16px 20px}.sync-card summary{display:flex;justify-content:space-between;align-items:center;gap:8px;cursor:pointer;list-style:none;font-size:13px;color:#30353b}
+.sync-card summary::-webkit-details-marker{display:none}
+.sync-card summary::before{content:"☁";font-size:18px;color:#bd2633;margin-right:6px}
+.sync-card summary strong{flex:1}
+#cloudBadge{font-size:10px;font-weight:750;border-radius:99px;background:#f5efe2;color:#825c17;padding:6px 8px;white-space:nowrap}
+.sync-card details{border:0;padding:0}.sync-card input{font-size:13px}
+.sync-card button{font-size:13px;padding:11px}
 </style>
 </head>
 <body>
@@ -96,6 +104,19 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 <div id="inventoryItems"></div><div id="searchEmpty" class="empty-state hidden"><strong>No matching products</strong>Try a different product name or supplier number.</div><div class="savebar"><button class="full" onclick="saveCount()">Save inventory count</button></div></section>
 <section id="historyPage" class="card hidden"><h2>Count history</h2><p class="notice">Previously saved inventory counts for this location.</p><div id="historyList"></div><button class="full secondary" onclick="exportCSV(false)">Export location CSV</button></section>
 <section id="dashboardPage" class="card hidden"><h2>Location overview</h2><p class="notice">Most recent counts saved on this device.</p><div id="dashboardList"></div><button class="full secondary" onclick="exportCSV(true)">Export all locations CSV</button></section>
+<div class="card sync-card">
+  <details id="cloudDetails">
+    <summary><strong>Google Sheets archive</strong><span id="cloudBadge">Setup needed</span></summary>
+    <p class="notice" style="margin:14px 0">Connect the authorized Google Apps Script web app once to send new inventory counts to date-named tabs in each location's Google Sheet. Local counts are preserved.</p>
+    <label for="syncEndpoint">GOOGLE APPS SCRIPT WEB APP URL</label>
+    <input id="syncEndpoint" type="url" inputmode="url" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off">
+    <label for="syncKey" style="margin-top:12px">SYNC KEY</label>
+    <input id="syncKey" type="password" placeholder="Private key (24+ characters)" autocomplete="off">
+    <button class="full" type="button" onclick="saveCloudSettings()">Save connection settings</button>
+    <button class="full secondary" type="button" onclick="retryCloudArchives()">Retry saved counts</button>
+    <p class="notice" id="syncStatus" role="status" aria-live="polite" style="margin-top:12px">Cloud writes are disabled until the web app URL and key are configured.</p>
+  </details>
+</div>
 <div class="card footnote"><p class="notice"><strong>Local storage:</strong> Inventory is saved in this browser, not synchronized between devices. Keep Safari website data to preserve saved counts.</p></div>
 </div></div></main>
 <script>
@@ -1056,6 +1077,78 @@ function showPage(page) {
   if (page === "dashboard") renderDashboard();
 }
 
+// Google Sheets archive settings are per-device; never store keys in source control.
+const GOOGLE_SYNC_URL = "spc_inventory_google_url";
+const GOOGLE_SYNC_KEY = "spc_inventory_google_key";
+const GOOGLE_SYNC_PENDING = "spc_inventory_google_pending";
+function getPendingArchives() {
+  try { const a=JSON.parse(localStorage.getItem(GOOGLE_SYNC_PENDING)||"[]"); return Array.isArray(a)?a:[]; }
+  catch { return []; }
+}
+function updateCloudUI(message) {
+  const active=!!(localStorage.getItem(GOOGLE_SYNC_URL)&&localStorage.getItem(GOOGLE_SYNC_KEY));
+  $("cloudBadge").textContent = active ? "Configured" : "Setup needed";
+  $("syncStatus").textContent = message || (active
+     ? getPendingArchives().length + " saved count(s) queued/awaiting verification. Google Sheets delivery is not automatically confirmable from this browser."
+     : "Cloud writes are disabled until the web app URL and key are configured.");
+}
+function saveCloudSettings() {
+  const url=$("syncEndpoint").value.trim(), key=$("syncKey").value.trim();
+  if (url && !/^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec(?:\?.*)?$/.test(url)) {
+    alert("Use the deployed Google Apps Script Web App URL ending in /exec."); return;
+  }
+  if (url && key.length < 24) {alert("Use a private sync key with at least 24 characters.");return;}
+  if (!url && key) {alert("Enter your Google Apps Script Web App URL.");return;}
+  localStorage.setItem(GOOGLE_SYNC_URL,url);
+  localStorage.setItem(GOOGLE_SYNC_KEY,url?key:"");
+  updateCloudUI(url?"Connection settings saved. Retry queued counts to submit them.":"Cloud archive disabled.");
+}
+function rememberCloudCount(id) {
+  try {
+    const pending=getPendingArchives();
+    if(!pending.includes(id))pending.push(id);
+    localStorage.setItem(GOOGLE_SYNC_PENDING,JSON.stringify(pending));
+  } catch(e) { updateCloudUI("Saved locally; cloud queue could not be stored on this device."); }
+}
+async function submitCountToGoogle(count) {
+  const url=localStorage.getItem(GOOGLE_SYNC_URL), key=localStorage.getItem(GOOGLE_SYNC_KEY);
+  if(!url || !key){updateCloudUI();return false;}
+  const localDate=new Date(count.date);
+  const yyyy=localDate.getFullYear(), mm=String(localDate.getMonth()+1).padStart(2,"0"),
+        dd=String(localDate.getDate()).padStart(2,"0");
+  const payload={
+    key, countId:String(count.id), location:count.location,
+    localDate:yyyy+"-"+mm+"-"+dd, date:count.date,
+    lines:count.lines, catalog:catalog
+  };
+  try {
+    // Apps Script does not provide a CORS-verifiable response for static sites.
+    // no-cors sends a write request, but its opaque response DOES NOT prove success.
+    await fetch(url,{method:"POST",mode:"no-cors",
+      headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)});
+    updateCloudUI("Upload request sent for "+count.location+". Check the new dated tab in Google Sheets to verify delivery. The count remains queued for safe retry.");
+    return true;
+  }catch(err){
+    updateCloudUI("Upload could not be sent. The count is safe on this device. Reconnect and retry.");
+    return false;
+  }
+}
+async function retryCloudArchives() {
+  const counts=getCounts(), pending=getPendingArchives();
+  if(!localStorage.getItem(GOOGLE_SYNC_URL)||!localStorage.getItem(GOOGLE_SYNC_KEY)){
+    updateCloudUI("Configure Google Sheets archive settings first.");return;
+  }
+  let attempted=0;
+  for(const id of pending){
+    const match=counts.find(c=>String(c.id)===String(id));
+    if(match){await submitCountToGoogle(match);attempted++;}
+  }
+  updateCloudUI(attempted+" archive request(s) sent. Please verify them in Google Sheets; retries are idempotent.");
+}
+$("syncEndpoint").value=localStorage.getItem(GOOGLE_SYNC_URL)||"";
+$("syncKey").value=localStorage.getItem(GOOGLE_SYNC_KEY)||"";
+updateCloudUI();
+
 function saveCount() {
   const lines = catalog.map((item, index) => {
     const raw = $("quantity" + index).value.trim();
@@ -1083,13 +1176,14 @@ function saveCount() {
 
   const counts = getCounts();
 
-  counts.unshift({
+  const countRecord={
     id: Date.now(),
     location: $("location").value,
     employee: "",
     date: new Date().toISOString(),
     lines: lines
-  });
+  };
+  counts.unshift(countRecord);
 
   try {
     setCounts(counts);
@@ -1103,7 +1197,9 @@ function saveCount() {
   });
 
   refreshCountView();
-  alert("Inventory count saved successfully.");
+  rememberCloudCount(countRecord.id);
+  submitCountToGoogle(countRecord);
+  alert("Inventory saved on this device. Google Sheets archiving is sent automatically when configured; check your sheet to confirm delivery.");
   showPage("history");
 }
 
