@@ -44,9 +44,15 @@ function doPost(e){
     const earlier=ss.getSheets().find(x=>x.getName()!=="START HERE");
     const oldPars={};
     if(earlier && earlier.getLastRow()>5){
-      const existing=earlier.getRange(6,1,earlier.getLastRow()-5,9).getValues();
-      const newLayout=String(earlier.getRange("A5").getDisplayValue()).indexOf("COUNT")>=0;
-      existing.forEach(r=>{const par=r[newLayout?2:4];if(r[8] && par!=="" && par!==null)oldPars[String(r[8])]=par;});
+      const header=String(earlier.getRange("A5").getDisplayValue());
+      const currentLayout=header==="SKU";
+      const countFirstLayout=header.indexOf("COUNT")>=0;
+      const existing=earlier.getRange(6,1,earlier.getLastRow()-5,currentLayout?8:9).getValues();
+      existing.forEach(r=>{
+        const id=r[currentLayout?7:8];
+        const par=r[currentLayout?5:(countFirstLayout?2:4)];
+        if(id && par!=="" && par!==null)oldPars[String(id)]=par;
+      });
     }
     const nameBase=localDate.slice(5,7)+"/"+localDate.slice(8,10);
     let tabName=nameBase, suffix=2;
@@ -55,13 +61,13 @@ function doPost(e){
     tab.setHiddenGridlines(true);
     tab.setFrozenRows(5);
     tab.setTabColor("#BD2633");
-    tab.getRange("A1:I1").merge().setValue(loc.toUpperCase()+" — INVENTORY COUNT");
+    tab.getRange("A1:H1").merge().setValue(loc.toUpperCase()+" — INVENTORY COUNT");
     tab.getRange("A2:B2").setValues([["COUNT ID",countId]]);
     tab.getRange("D2:E2").setValues([["COMPLETED",localDate]]);
-    tab.getRange("A3:I3").merge().setValue("Savannah Pizza Company  |  Counts recorded in full or decimal cases");
-    tab.getRange("A5:I5").setValues([[
-       "COUNT (CASES)","PRODUCT NAME","PAR (CASES)","SUGGESTED ORDER",
-       "CASE PACK","CATEGORY","SUPPLIER SKU","COUNT ID","ITEM ID"
+    tab.getRange("A3:H3").merge().setValue("Savannah Pizza Company  |  Counts recorded in full or decimal cases");
+    tab.getRange("A5:H5").setValues([[
+       "SKU","PRODUCT NAME","CASE PACK","COUNT (CASES)",
+       "SUGGESTED ORDER","PAR (CASES)","COUNT ID","ITEM ID"
     ]]);
     const byId={};
     lines.forEach(x=>{if(x && x.itemId)byId[String(x.itemId)]=x;});
@@ -76,7 +82,7 @@ function doPost(e){
       if(nextCat!==category){
         category=nextCat;
         categories.push(rows.length+6);
-        rows.push(["",asText(category.toUpperCase()),"","","","", "", "", ""]);
+        rows.push([asText(category.toUpperCase()),"","","","","","",""]);
       }
       const pack=String(item.casePack || (item.packCount && item.eachSize
         ? String(item.packCount)+" × "+String(item.eachSize)+(item.sizeUnit?" "+item.sizeUnit:"")
@@ -84,26 +90,29 @@ function doPost(e){
       const count=line && line.quantity!=="" && line.quantity!=null ? Number(line.quantity) : "";
       const par=Object.prototype.hasOwnProperty.call(oldPars,id)?oldPars[id]:"";
       const row=rows.length+6;
-      rows.push([count,asText(item.name||item.originalName||""),par,
-       '=IF(OR(A'+row+'="",C'+row+'=""),"",MAX(0,ROUNDUP(C'+row+'-A'+row+',0)))',
-       asText(pack),asText(category),asText(item.supplierSku||""),asText(countId),asText(id)]);
+      rows.push([asText(item.supplierSku||""),asText(item.name||item.originalName||""),
+       asText(pack),count,
+       '=IF(OR(D'+row+'="",F'+row+'=""),"",MAX(0,ROUNDUP(F'+row+'-D'+row+',0)))',
+       par,asText(countId),asText(id)]);
     }
     if(!rows.length)throw Error("NO_ITEMS");
-    tab.getRange(6,1,rows.length,9).setValues(rows);
-    tab.getRange("A1:I1").setBackground("#BD2633").setFontColor("#FFFFFF").setFontWeight("bold").setFontSize(16);
-    tab.getRange("A3:I3").setBackground("#F8F5F2").setFontColor("#6B7280").setFontSize(10);
-    tab.getRange("A5:I5").setBackground("#EAE6E2").setFontWeight("bold").setWrap(true);
-    tab.getRange(6,1,rows.length,1).setNumberFormat("0.###");
-    tab.getRange(6,3,rows.length,2).setNumberFormat("0.###");
+    tab.getRange(6,1,rows.length,8).setValues(rows);
+    tab.getRange("A1:H1").setBackground("#BD2633").setFontColor("#FFFFFF").setFontWeight("bold").setFontSize(16);
+    tab.getRange("A3:H3").setBackground("#F8F5F2").setFontColor("#6B7280").setFontSize(10);
+    tab.getRange("A5:H5").setBackground("#EAE6E2").setFontWeight("bold").setWrap(true);
+    tab.getRange(6,4,rows.length,3).setNumberFormat("0.###");
     for(const n of categories){
-      tab.getRange(n,1,1,9).setBackground("#F2EFEB").setFontColor("#9E2029").setFontWeight("bold");
+      tab.getRange(n,1,1,5).merge().setBackground("#F2EFEB").setFontColor("#9E2029")
+        .setFontWeight("bold").setFontSize(16).setHorizontalAlignment("center")
+        .setVerticalAlignment("middle");
+      tab.setRowHeight(n,34);
     }
-    const widths=[140,320,130,170,200,145,130,145,120];
+    const widths=[140,330,205,145,180,130,145,120];
     widths.forEach((width,i)=>tab.setColumnWidth(i+1,width));
     tab.setRowHeight(1,38);tab.setRowHeight(5,34);
-    tab.hideColumns(8,2);
+    tab.hideColumns(6,3);
     tab.getRange(6,2,rows.length,1).setFontWeight("bold");
-    tab.getRange(6,1,rows.length,4).setFontSize(12);
+    tab.getRange(6,1,rows.length,5).setFontSize(12);
     const starter=ss.getSheetByName("START HERE");
     if(starter && ss.getSheets().length>1)ss.deleteSheet(starter);
     SpreadsheetApp.flush();
