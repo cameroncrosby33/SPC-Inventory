@@ -964,7 +964,7 @@ function unpackItem(row, index) {
   const originalName = name + " — " + casePack;
   // Preserve the exact supplier case description, including bags, jars and packs.
   // Count entries remain decimal cases; pack descriptions are informational.
-  const match = casePack.match(/^(\\d+)\\s*×\\s*(\\d+(?:\\.\\d+)?)\\s*(lb|oz|gal|g|L|ct)\\b/i);
+  const match = casePack.match(/^(\d+)\s*×\s*(\d+(?:\.\d+)?)\s*(lb|oz|gal|g|L|ct)\b/i);
   const packCount = match ? Number(match[1]) : null;
   const eachSize = match ? Number(match[2]) : null;
   const sizeUnit = match ? match[3] : "";
