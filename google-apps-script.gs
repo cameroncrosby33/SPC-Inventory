@@ -37,9 +37,48 @@ function doPost(e){
     lock.waitLock(30000);
     const ss=SpreadsheetApp.openById(SPC_SHEETS[loc]);
     for (const old of ss.getSheets()) {
-      if(old.getName()!=="START HERE" && String(old.getRange("B2").getDisplayValue())===countId) {
+      if(old.getName()!=="START HERE" && old.getName()!=="MASTER TEMPLATE" && String(old.getRange("B2").getDisplayValue())===countId) {
         return response({ok:true,duplicate:true,sheet:old.getName()});
       }
+    }
+    // A store may maintain a fully formatted, formula-driven master worksheet.
+    // Copy the sheet natively so formatting, merged cells, PAR formulas, and
+    // custom ordering formulas are preserved without rebuilding the layout.
+    const master=ss.getSheetByName("MASTER TEMPLATE");
+    if(master){
+      const nameBase=localDate.slice(5,7)+"/"+localDate.slice(8,10);
+      let tabName=nameBase, suffix=2;
+      while(ss.getSheetByName(tabName))tabName=nameBase+" ("+(suffix++)+")";
+      const tab=master.copyTo(ss).setName(tabName);
+      ss.setActiveSheet(tab);
+      ss.moveActiveSheet(1);
+      tab.showSheet();
+      tab.getRange("B2").setValue(countId);
+      tab.getRange("E2").setValue(localDate);
+      // Expected sales is an input for the upcoming week, not last week's value.
+      tab.getRange("B4").clearContent();
+      const byId={};
+      lines.forEach(x=>{if(x && x.itemId)byId[String(x.itemId)]=x;});
+      const byName={};
+      lines.forEach(x=>{if(x && x.name)byName[String(x.name).trim().toLowerCase()]=x;});
+      const lastRow=tab.getLastRow();
+      const values=tab.getRange(6,1,Math.max(1,lastRow-5),9).getValues();
+      let matched=0;
+      const counts=values.map(r=>{
+        const id=String(r[8]||"");
+        const name=String(r[1]||"").trim().toLowerCase();
+        const line=byId[id]||byName[name];
+        if(!line)return [""];
+        matched++;
+        return [line.quantity===""||line.quantity==null?"":Number(line.quantity)];
+      });
+      if(matched===0){
+        ss.deleteSheet(tab);
+        throw Error("MASTER_TEMPLATE_ITEMS_NOT_MATCHED");
+      }
+      tab.getRange(6,4,counts.length,1).setValues(counts);
+      SpreadsheetApp.flush();
+      return response({ok:true,sheet:tabName,location:loc,rows:matched,template:true});
     }
     const earlier=ss.getSheets().find(x=>x.getName()!=="START HERE");
     const oldPars={};
