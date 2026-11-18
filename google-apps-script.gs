@@ -46,11 +46,12 @@ function doPost(e){
     if(earlier && earlier.getLastRow()>5){
       const header=String(earlier.getRange("A5").getDisplayValue());
       const currentLayout=header==="SKU";
+      const hasVisiblePar=currentLayout && String(earlier.getRange("E5").getDisplayValue())==="PAR (CASES)";
       const countFirstLayout=header.indexOf("COUNT")>=0;
       const existing=earlier.getRange(6,1,earlier.getLastRow()-5,currentLayout?8:9).getValues();
       existing.forEach(r=>{
         const id=r[currentLayout?7:8];
-        const par=r[currentLayout?5:(countFirstLayout?2:4)];
+        const par=r[currentLayout?(hasVisiblePar?4:5):(countFirstLayout?2:4)];
         if(id && par!=="" && par!==null)oldPars[String(id)]=par;
       });
     }
@@ -65,9 +66,13 @@ function doPost(e){
     tab.getRange("A2:B2").setValues([["COUNT ID",countId]]);
     tab.getRange("D2:E2").setValues([["COMPLETED",localDate]]);
     tab.getRange("A3:H3").merge().setValue("Savannah Pizza Company  |  Counts recorded in full or decimal cases");
+    tab.getRange("A4").setValue("EXPECTED SALES");
+    tab.getRange("B4").setValue("");
+    tab.getRange("D4").setValue("SALES ÷ $10,000");
+    tab.getRange("E4").setFormula('=IF(B4="","",B4/10000)');
     tab.getRange("A5:H5").setValues([[
        "SKU","PRODUCT NAME","CASE PACK","COUNT (CASES)",
-       "SUGGESTED ORDER","PAR (CASES)","COUNT ID","ITEM ID"
+       "PAR (CASES)","SUGGESTED ORDER","COUNT ID","ITEM ID"
     ]]);
     const byId={};
     lines.forEach(x=>{if(x && x.itemId)byId[String(x.itemId)]=x;});
@@ -91,15 +96,21 @@ function doPost(e){
       const par=Object.prototype.hasOwnProperty.call(oldPars,id)?oldPars[id]:"";
       const row=rows.length+6;
       rows.push([asText(item.supplierSku||""),asText(item.name||item.originalName||""),
-       asText(pack),count,
-       '=IF(OR(D'+row+'="",F'+row+'=""),"",MAX(0,ROUNDUP(F'+row+'-D'+row+',0)))',
-       par,asText(countId),asText(id)]);
+       asText(pack),count,par,
+       '=IF(OR(D'+row+'="",E'+row+'=""),"",MAX(0,ROUNDUP(E'+row+'-D'+row+',0)))',
+       asText(countId),asText(id)]);
     }
     if(!rows.length)throw Error("NO_ITEMS");
     tab.getRange(6,1,rows.length,8).setValues(rows);
     tab.getRange("A1:H1").setBackground("#BD2633").setFontColor("#FFFFFF").setFontWeight("bold").setFontSize(16);
     tab.getRange("A3:H3").setBackground("#F8F5F2").setFontColor("#6B7280").setFontSize(10);
     tab.getRange("A5:H5").setBackground("#EAE6E2").setFontWeight("bold").setWrap(true);
+    tab.getRange("A4").setFontWeight("bold").setFontSize(11);
+    tab.getRange("D4").setFontWeight("bold").setFontSize(11);
+    tab.getRange("B4").setNumberFormat('"$"#,##0.00').setBackground("#FFF2CF")
+      .setFontWeight("bold").setFontSize(13).setNote("Enter expected net sales for the upcoming week.");
+    tab.getRange("E4").setNumberFormat("0.000").setFontWeight("bold").setFontSize(13);
+    tab.setRowHeight(4,34);
     tab.getRange(6,4,rows.length,3).setNumberFormat("0.###");
     for(const n of categories){
       tab.getRange(n,1,1,5).merge().setBackground("#F2EFEB").setFontColor("#9E2029")
@@ -107,7 +118,7 @@ function doPost(e){
         .setVerticalAlignment("middle");
       tab.setRowHeight(n,34);
     }
-    const widths=[140,330,205,145,180,130,145,120];
+    const widths=[165,330,205,170,170,180,145,120];
     widths.forEach((width,i)=>tab.setColumnWidth(i+1,width));
     tab.setRowHeight(1,38);tab.setRowHeight(5,34);
     tab.hideColumns(6,3);
