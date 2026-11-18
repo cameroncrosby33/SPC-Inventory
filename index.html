@@ -96,10 +96,13 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 #inventoryItems .item .pack-label{font-size:14px;font-weight:750;line-height:1.45;color:#454b54;margin-top:7px}
 #inventoryItems .item input{font-size:19px;font-weight:800;min-height:50px}
 @media(max-width:720px){#inventoryItems .item strong{font-size:16px}#inventoryItems .item .pack-label{font-size:13px}#inventoryItems .item{grid-template-columns:minmax(0,1fr) 96px;gap:10px}}
+
+.brand-logo{display:block;width:100px;height:68px;object-fit:contain;flex-shrink:0}
+@media(max-width:720px){.brand-logo{width:82px;height:58px}.brand{gap:9px}}
 </style>
 </head>
 <body>
-<header><div class="topbar"><div class="brand"><div class="brandmark" aria-hidden="true">SP</div><div><h1>SPC Inventory</h1><p>SAVANNAH PIZZA COMPANY</p></div></div><div class="status"><span class="status-dot"></span>Saved on this device</div></div></header>
+<header><div class="topbar"><div class="brand"><img class="brand-logo" src="assets/spc-logo.svg" alt="Savannah Pizza Company logo"><div><h1>SPC Inventory</h1><p>SAVANNAH PIZZA COMPANY</p></div></div><div class="status"><span class="status-dot"></span>Saved on this device</div></div></header>
 <main>
 <section class="intro"><p class="eyebrow">Operations / Inventory</p><h2>Inventory workspace</h2><p>Simple, accurate counts across your restaurants.</p></section>
 <div class="workspace">
