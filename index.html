@@ -90,6 +90,12 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 #cloudBadge{font-size:10px;font-weight:750;border-radius:99px;background:#f5efe2;color:#825c17;padding:6px 8px;white-space:nowrap}
 .sync-card details{border:0;padding:0}.sync-card input{font-size:13px}
 .sync-card button{font-size:13px;padding:11px}
+
+/* Larger, higher-contrast product and packaging labels for mobile inventory counting */
+#inventoryItems .item strong{font-size:17px;font-weight:800;line-height:1.38;letter-spacing:0;color:#1e242a}
+#inventoryItems .item .pack-label{font-size:14px;font-weight:750;line-height:1.45;color:#454b54;margin-top:7px}
+#inventoryItems .item input{font-size:19px;font-weight:800;min-height:50px}
+@media(max-width:720px){#inventoryItems .item strong{font-size:16px}#inventoryItems .item .pack-label{font-size:13px}#inventoryItems .item{grid-template-columns:minmax(0,1fr) 96px;gap:10px}}
 </style>
 </head>
 <body>
@@ -100,8 +106,8 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 <aside class="side"><div class="card"><label for="location">CURRENT LOCATION</label><select id="location"></select><nav class="tabs" aria-label="Inventory sections"><button id="countBtn" onclick="showPage('count')">Count</button><button id="historyBtn" class="secondary" onclick="showPage('history')">History</button><button id="dashboardBtn" class="secondary" onclick="showPage('dashboard')">Overview</button></nav></div></aside>
 <div class="content">
 <section id="countPage" class="card"><div class="panel-heading"><div><h2>New inventory count</h2><p class="notice">Enter cases on hand. Use decimals for partial cases (e.g., 1.5).</p></div></div>
-<div class="count-toolbar"><input id="itemSearch" type="search" placeholder="Search products or supplier numbers…" aria-label="Search inventory items"><span id="countSummary" class="count-summary" aria-live="polite">0 entered</span></div>
-<div id="inventoryItems"></div><div id="searchEmpty" class="empty-state hidden"><strong>No matching products</strong>Try a different product name or supplier number.</div><div class="savebar"><button class="full" onclick="saveCount()">Save inventory count</button></div></section>
+<div class="count-toolbar"><input id="itemSearch" type="search" placeholder="Search products or package sizes…" aria-label="Search inventory items"><span id="countSummary" class="count-summary" aria-live="polite">0 entered</span></div>
+<div id="inventoryItems"></div><div id="searchEmpty" class="empty-state hidden"><strong>No matching products</strong>Try a different product name or package size.</div><div class="savebar"><button class="full" onclick="saveCount()">Save inventory count</button></div></section>
 <section id="historyPage" class="card hidden"><h2>Count history</h2><p class="notice">Previously saved inventory counts for this location.</p><div id="historyList"></div><button class="full secondary" onclick="exportCSV(false)">Export location CSV</button></section>
 <section id="dashboardPage" class="card hidden"><h2>Location overview</h2><p class="notice">Most recent counts saved on this device.</p><div id="dashboardList"></div><button class="full secondary" onclick="exportCSV(true)">Export all locations CSV</button></section>
 <div class="card sync-card">
@@ -130,829 +136,925 @@ const inventory = [
     "Produce",
     "Yellow Onions",
     "1 × 50 lb bag",
-    "0000020"
+    "0000020",
+    "spc-0"
   ],
   [
     "Produce",
     "Green Peppers",
     "1 × 25 lb case",
-    "0000006"
+    "0000006",
+    "spc-1"
   ],
   [
     "Produce",
     "Whole Mushrooms",
     "1 × 10 lb case",
-    "0000012"
+    "0000012",
+    "spc-2"
   ],
   [
     "Produce",
     "Romaine Lettuce",
     "1 × 24 ct case",
-    "0000004"
+    "0000004",
+    "spc-3"
   ],
   [
     "Produce",
     "Baby Spinach",
     "1 × 4 lb bag",
-    "0000049"
+    "0000049",
+    "spc-4"
   ],
   [
     "Produce",
     "Sun-Dried Tomatoes",
     "1 × 5 lb bag",
-    "600401"
+    "600401",
+    "spc-5"
   ],
   [
     "Produce",
     "Roma Tomatoes",
     "1 × 25 lb case",
-    "0000008"
+    "0000008",
+    "spc-6"
   ],
   [
     "Produce",
     "Sliced Banana Peppers",
     "4 × 1 gal jar",
-    "5060146"
+    "5060146",
+    "spc-7"
   ],
   [
     "Produce",
     "Sliced Jalapeños",
     "4 × 1 gal jar",
-    "5060148"
+    "5060148",
+    "spc-8"
   ],
   [
     "Produce",
     "Sliced Green Olives",
     "6 × 55 oz cans",
-    "1400222"
+    "1400222",
+    "spc-9"
   ],
   [
     "Produce",
     "Sliced Black Olives",
     "6 × 55 oz cans",
-    "1400210"
+    "1400210",
+    "spc-10"
   ],
   [
     "Produce",
     "Pineapple Tidbits",
     "6 × 55 oz cans",
-    "5040779"
+    "5040779",
+    "spc-11"
   ],
   [
     "Produce",
     "Sliced Almonds (Unroasted, Unsalted)",
     "1 × 32 oz",
-    "336546"
+    "336546",
+    "spc-12"
   ],
   [
     "Produce",
     "Shredded Coconut",
     "1 × 24 oz",
-    "548177"
+    "548177",
+    "spc-13"
   ],
   [
     "Produce",
     "Dried Cranberries",
     "1 × 10 lb bag",
-    "466505"
-  ],
-  [
-    "Produce",
-    "Black Beans",
-    "6 × 15 oz",
-    ""
+    "466505",
+    "spc-14"
   ],
   [
     "Produce",
     "Pickle Spears",
     "1 × 5 gal bucket",
-    "5130611"
-  ],
-  [
-    "Produce",
-    "Pepperoncini",
-    "4 × 1 gal",
-    "5060100"
+    "5130611",
+    "spc-16"
   ],
   [
     "Produce",
     "Artichoke Hearts",
     "6 × 55 oz cans",
-    "5130361"
+    "5130361",
+    "spc-18"
   ],
   [
     "Dairy Products",
     "Feta Cheese Crumbles",
     "2 × 5 lb bags",
-    "0800381"
+    "0800381",
+    "spc-19"
   ],
   [
     "Dairy Products",
     "Garlic Butter Cups",
     "128 × 1.25 oz cups",
-    "4750430"
+    "4750430",
+    "spc-20"
   ],
   [
     "Dairy Products",
     "Salted Butter",
     "36 × 1 lb sticks",
-    "0920955"
+    "0920955",
+    "spc-21"
   ],
   [
     "Dairy Products",
     "Shredded Whole-Milk Mozzarella Cheese",
     "6 × 5 lb bags",
-    "0400009"
+    "0400009",
+    "spc-22"
   ],
   [
     "Dairy Products",
     "Cream Cheese Icing",
     "1 × 18 lb",
-    ""
+    "",
+    "spc-23"
   ],
   [
     "Dairy Products",
     "Grated Parmesan Cheese",
     "1 × 5 lb bag",
-    "0800096"
+    "0800096",
+    "spc-24"
   ],
   [
     "Dairy Products",
     "Grated Parmesan Cheese Packets",
     "200 × 3 g",
-    "2000098"
+    "2000098",
+    "spc-25"
   ],
   [
     "Dairy Products",
     "Whole-Milk Ricotta Cheese",
     "6 × 3 lb",
-    "0900040"
+    "0900040",
+    "spc-26"
   ],
   [
     "Dairy Products",
     "Sour Cream Packets",
     "100 × 1 oz",
-    "5004548"
+    "5004548",
+    "spc-27"
   ],
   [
     "Sauces & Dressings",
     "Pizza Sauce",
     "6 × 6.68 lb bags",
-    "1000762"
+    "1000762",
+    "spc-28"
   ],
   [
     "Sauces & Dressings",
     "Basil Pesto (Nut-Free)",
     "1 × 30 oz jar",
-    "5240885"
+    "5240885",
+    "spc-29"
   ],
   [
     "Sauces & Dressings",
     "Teriyaki Glaze",
     "6 × 5 lb jugs",
-    "5002273"
+    "5002273",
+    "spc-30"
   ],
   [
     "Sauces & Dressings",
     "Mild Wing Sauce",
     "4 × 1 gal jugs",
-    "5120928"
+    "5120928",
+    "spc-31"
   ],
   [
     "Sauces & Dressings",
     "Hot Wing Sauce",
     "4 × 1 gal jugs",
-    "5120924"
+    "5120924",
+    "spc-32"
   ],
   [
     "Sauces & Dressings",
     "Kick’n Bourbon Sauce",
     "4 × 64 oz jugs",
-    "5120090"
+    "5120090",
+    "spc-33"
   ],
   [
     "Sauces & Dressings",
     "Garlic Parmesan Sauce",
     "4 × 64 oz jugs",
-    "5120944"
+    "5120944",
+    "spc-34"
   ],
   [
     "Sauces & Dressings",
     "Mango Habanero Sauce",
     "4 × 64 oz jugs",
-    "4700346"
+    "4700346",
+    "spc-35"
   ],
   [
     "Sauces & Dressings",
     "BBQ Sauce",
     "4 × 1 gal jugs",
-    "5120920"
+    "5120920",
+    "spc-36"
   ],
   [
     "Sauces & Dressings",
     "Honey Mustard",
     "1 × 1 gal jar",
-    "4700499"
+    "4700499",
+    "spc-37"
   ],
   [
     "Sauces & Dressings",
     "Mayonnaise Packets",
     "210 × 0.38 oz packets",
-    "2060500"
+    "2060500",
+    "spc-38"
   ],
   [
     "Sauces & Dressings",
     "Blue Cheese Dressing Cups",
     "100 × 1.5 oz cups",
-    "4753057"
+    "4753057",
+    "spc-39"
   ],
   [
     "Sauces & Dressings",
     "Ranch Dressing Cups",
     "100 × 1.5 oz cups",
-    "4700325"
+    "4700325",
+    "spc-40"
   ],
   [
     "Sauces & Dressings",
     "Thousand Island Dressing",
     "60 × 1.5 oz packets",
-    "4750483"
+    "4750483",
+    "spc-41"
   ],
   [
     "Sauces & Dressings",
     "Honey Mustard Dressing",
     "60 × 1.5 oz packets",
-    "4750449"
+    "4750449",
+    "spc-42"
   ],
   [
     "Sauces & Dressings",
     "Creamy Italian Dressing",
     "60 × 1.5 oz packets",
-    "4750485"
+    "4750485",
+    "spc-43"
   ],
   [
     "Sauces & Dressings",
     "Balsamic Vinaigrette Dressing",
     "60 × 1.5 oz packets",
-    "4750804"
+    "4750804",
+    "spc-44"
   ],
   [
     "Sauces & Dressings",
     "Greek Dressing",
     "60 × 1.5 oz packets",
-    "4750490"
+    "4750490",
+    "spc-45"
   ],
   [
     "Sauces & Dressings",
     "Caesar Dressing",
     "60 × 1.5 oz packets",
-    "4750488"
+    "4750488",
+    "spc-46"
   ],
   [
     "Sauces & Dressings",
     "Country French Dressing",
     "60 × 1.5 oz packets",
-    "4750487"
+    "4750487",
+    "spc-47"
   ],
   [
     "Meats",
     "Smoked Bacon Chips",
     "2 × 5 lb bags",
-    "4000240"
+    "4000240",
+    "spc-48"
   ],
   [
     "Meats",
     "Sliced Ham",
     "12 × 1 lb bags",
-    "4600129"
+    "4600129",
+    "spc-49"
   ],
   [
     "Meats",
     "Italian Sausage",
     "3 × 5 lb bags",
-    "4001056"
+    "4001056",
+    "spc-50"
   ],
   [
     "Meats",
     "Pepperoni",
     "2 × 12.5 lb bags",
-    "4600163"
+    "4600163",
+    "spc-51"
   ],
   [
     "Meats",
     "Beef and Pork Meatballs",
     "2 × 5 lb bags",
-    "4010004"
+    "4010004",
+    "spc-52"
   ],
   [
     "Meats",
     "Anchovies",
     "1 × 28 oz tin",
-    "440150"
-  ],
-  [
-    "Meats",
-    "Raw Pork Butt",
-    "1 × 10 lb",
-    "4000123"
-  ],
-  [
-    "Meats",
-    "Cooked Pork (4 oz. Portions)",
-    "Not specified",
-    ""
+    "440150",
+    "spc-53"
   ],
   [
     "Meats",
     "Steak (4 oz. Portions)",
     "40 × 4 oz",
-    "4000422"
+    "4000422",
+    "spc-56"
   ],
   [
     "Meats",
     "Cooked Steak (4 oz. Portions)",
     "Not specified",
-    ""
+    "",
+    "spc-57"
   ],
   [
     "Meats",
     "Raw Chicken Breasts",
     "4 × 10 lb bags",
-    "3902165"
+    "3902165",
+    "spc-58"
   ],
   [
     "Meats",
     "Cooked, Chopped Chicken Breasts (4 oz. Portions)",
     "Not specified",
-    ""
+    "",
+    "spc-59"
   ],
   [
     "Meats",
     "Raw Chicken Wings",
     "4 × 10 lb bags",
-    "4801209"
+    "4801209",
+    "spc-60"
   ],
   [
     "Meats",
     "Cooked Chicken Wings (6-Count Packs)",
     "10 packs per tray",
-    ""
+    "",
+    "spc-61"
   ],
   [
     "Spices, Dry Goods & Other Food",
     "Ground Cinnamon",
     "1 × 12.5 oz",
-    "2000056"
+    "2000056",
+    "spc-62"
   ],
   [
     "Spices, Dry Goods & Other Food",
     "Crushed Red Pepper Packets",
     "500 × 1 g packets",
-    "2000099"
+    "2000099",
+    "spc-63"
   ],
   [
     "Spices, Dry Goods & Other Food",
     "High-Gluten Flour",
     "1 × 25 lb bag",
-    "1510024"
+    "1510024",
+    "spc-64"
   ],
   [
     "Spices, Dry Goods & Other Food",
     "Lemon Pepper Seasoning",
     "1 × 30 oz",
-    "2005900"
+    "2005900",
+    "spc-65"
   ],
   [
     "Spices, Dry Goods & Other Food",
     "Dark Brown Sugar",
     "1 × 50 lb",
-    "00018069"
+    "00018069",
+    "spc-66"
   ],
   [
     "Spices, Dry Goods & Other Food",
     "Ground Black Pepper",
     "1 × 5 lb",
-    "00136132"
+    "00136132",
+    "spc-67"
   ],
   [
     "Spices, Dry Goods & Other Food",
     "Ground Cumin",
     "1 × 16 oz",
-    "00052623"
+    "00052623",
+    "spc-68"
   ],
   [
     "Spices, Dry Goods & Other Food",
     "Oregano",
     "1 × 5 lb",
-    "00140177"
+    "00140177",
+    "spc-69"
   ],
   [
     "Spices, Dry Goods & Other Food",
     "Chili Powder",
     "1 × 18 oz",
-    "00136194"
+    "00136194",
+    "spc-70"
   ],
   [
     "Spices, Dry Goods & Other Food",
     "Paprika",
     "1 × 5 lb",
-    ""
+    "",
+    "spc-71"
   ],
   [
     "Spices, Dry Goods & Other Food",
     "Granulated Garlic",
     "6 × 5 lb",
-    "10097165"
+    "10097165",
+    "spc-72"
   ],
   [
     "Spices, Dry Goods & Other Food",
     "Smoke Flavor Powder",
     "2 × 8 oz",
-    ""
+    "",
+    "spc-73"
   ],
   [
     "Spices, Dry Goods & Other Food",
     "Garlic Salt",
     "1 × 33 oz",
-    ""
+    "",
+    "spc-74"
   ],
   [
     "Spices, Dry Goods & Other Food",
     "Taco Seasoning",
     "1 × 22 oz",
-    ""
+    "",
+    "spc-75"
   ],
   [
     "Spices, Dry Goods & Other Food",
     "Dry Rub Seasoning",
     "1 × 25 lb bucket",
-    "2020055"
+    "2020055",
+    "spc-76"
   ],
   [
     "Spices, Dry Goods & Other Food",
     "Granulated Sugar",
     "1 × 50 lb bag",
-    "5000522"
+    "5000522",
+    "spc-77"
   ],
   [
     "Spices, Dry Goods & Other Food",
     "Yeast",
     "20 × 16 oz bags",
-    "2040051"
+    "2040051",
+    "spc-78"
   ],
   [
     "Spices, Dry Goods & Other Food",
     "Salt",
     "1 × 25 lb bag",
-    "4100209"
+    "4100209",
+    "spc-79"
   ],
   [
     "Spices, Dry Goods & Other Food",
     "Lasagna Sheets",
     "40 × 4 oz",
-    "3802008"
+    "3802008",
+    "spc-80"
   ],
   [
     "Spices, Dry Goods & Other Food",
     "14-Inch Thin Pizza Crusts",
     "30 × 11 oz",
-    "3800229"
+    "3800229",
+    "spc-81"
   ],
   [
     "Spices, Dry Goods & Other Food",
     "10-Inch Cauliflower Pizza Crusts",
     "6 × 4 × 6 oz",
-    "3700171"
+    "3700171",
+    "spc-82"
   ],
   [
     "Spices, Dry Goods & Other Food",
     "6.5-Inch Sub Buns",
     "16 × 4 ct bags",
-    ""
+    "",
+    "spc-83"
   ],
   [
     "Spices, Dry Goods & Other Food",
     "Pizza Dough Balls",
     "Count by tray; quantity not specified",
-    "5030102"
+    "5030102",
+    "spc-84"
   ],
   [
     "Spices, Dry Goods & Other Food",
     "Croutons",
     "8 × 2.5 lb bags",
-    "3500109"
+    "3500109",
+    "spc-85"
   ],
   [
     "Spices, Dry Goods & Other Food",
     "Cooking Spray",
     "6 × 17 oz cans",
-    "5002226"
+    "5002226",
+    "spc-86"
   ],
   [
     "Spices, Dry Goods & Other Food",
     "Potato Chips",
     "104 × 1 oz bags",
-    "3500014"
+    "3500014",
+    "spc-87"
   ],
   [
     "Spices, Dry Goods & Other Food",
     "Olive Pomace Oil Blend",
     "6 × 1 gal jugs",
-    "4401588"
+    "4401588",
+    "spc-88"
   ],
   [
     "Desserts",
     "Cheesecake",
     "2 × 12 slices",
-    "4400069"
+    "4400069",
+    "spc-89"
   ],
   [
     "Desserts",
     "Frozen Chocolate Chip Cookies",
     "240 ct × 2 oz",
-    "2063118"
+    "2063118",
+    "spc-90"
   ],
   [
     "Desserts",
     "Strawberry Topping",
     "3 × 118 oz",
-    "5001444"
+    "5001444",
+    "spc-91"
   ],
   [
     "Desserts",
     "Raspberry Sauce",
     "12 × 19.5 oz",
-    "6500003"
+    "6500003",
+    "spc-92"
   ],
   [
     "Paper & Packaging Supplies",
     "10-Inch Pizza Boxes",
     "1 × 50 ct pack",
-    "6500041"
+    "6500041",
+    "spc-93"
   ],
   [
     "Paper & Packaging Supplies",
     "14-Inch Pizza Boxes",
     "1 × 50 ct pack",
-    "6500019"
+    "6500019",
+    "spc-94"
   ],
   [
     "Paper & Packaging Supplies",
     "16-Inch Pizza Boxes",
     "1 × 50 ct pack",
-    "6500091"
+    "6500091",
+    "spc-95"
   ],
   [
     "Paper & Packaging Supplies",
     "18-Inch Pizza Boxes",
     "1 × 50 ct pack",
-    "9599986"
+    "9599986",
+    "spc-96"
   ],
   [
     "Paper & Packaging Supplies",
     "6-Inch Black Hinged Containers",
     "4 × 125 ct packs",
-    "7652360"
+    "7652360",
+    "spc-97"
   ],
   [
     "Paper & Packaging Supplies",
     "8.88-Inch Paper Plates",
     "4 × 150 ct",
-    "2100833"
+    "2100833",
+    "spc-98"
   ],
   [
     "Paper & Packaging Supplies",
     "9-Inch Foam Takeout Containers",
     "2 × 100 ct packs",
-    "6000111"
+    "6000111",
+    "spc-99"
   ],
   [
     "Paper & Packaging Supplies",
     "24-Inch Plastic Film Wrap",
     "1 × 2,000 ft case",
-    "7550072"
-  ],
-  [
-    "Paper & Packaging Supplies",
-    "16 oz. Foam Cups",
-    "40 × 25 ct",
-    "7570135"
-  ],
-  [
-    "Paper & Packaging Supplies",
-    "16 oz. Cup Lids",
-    "10 × 100 ct",
-    "7670106"
+    "7550072",
+    "spc-100"
   ],
   [
     "Paper & Packaging Supplies",
     "2 oz. Clear Portion Cups",
     "10 × 250 ct packs",
-    ""
+    "",
+    "spc-103"
   ],
   [
     "Paper & Packaging Supplies",
     "2 oz. Portion Cup Lids",
     "20 × 125 ct packs",
-    "6500016"
+    "6500016",
+    "spc-104"
   ],
   [
     "Paper & Packaging Supplies",
     "1.5-Inch Pizza Savers",
     "10 × 100 ct packs",
-    "5500015"
+    "5500015",
+    "spc-105"
   ],
   [
     "Paper & Packaging Supplies",
     "18-Inch Aluminum Foil Rolls",
     "1 × 500 ft case",
-    "5500045"
+    "5500045",
+    "spc-106"
   ],
   [
     "Paper & Packaging Supplies",
     "Half-Size Steam Table Pans (2.5-Inch Deep)",
     "100 ct",
-    "5500050"
+    "5500050",
+    "spc-107"
   ],
   [
     "Paper & Packaging Supplies",
     "Half-Size Steam Table Pan Lids",
     "100 ct",
-    "5500040"
+    "5500040",
+    "spc-108"
   ],
   [
     "Paper & Packaging Supplies",
     "Pop-Up Foil Sheets (12 × 10.75 Inches)",
     "12 × 200 ct boxes",
-    "8001289"
+    "8001289",
+    "spc-109"
   ],
   [
     "Paper & Packaging Supplies",
     "Large Powder-Free Nitrile Gloves",
     "10 × 100 ct boxes",
-    "6000800"
+    "6000800",
+    "spc-110"
   ],
   [
     "Paper & Packaging Supplies",
     "Extra-Large Powder-Free Nitrile Gloves",
     "10 × 100 ct boxes",
-    "6000275"
+    "6000275",
+    "spc-111"
   ],
   [
     "Paper & Packaging Supplies",
     "Individually Wrapped Jumbo Straws",
     "24 × 500 ct",
-    "9860018"
+    "9860018",
+    "spc-112"
   ],
   [
     "Paper & Packaging Supplies",
     "Toilet Paper",
     "36 × 1,000 sheets",
-    "6000000"
+    "6000000",
+    "spc-113"
   ],
   [
     "Paper & Packaging Supplies",
     "Household Paper Towel Rolls",
     "30 ct",
-    "6000335"
+    "6000335",
+    "spc-114"
   ],
   [
     "Paper & Packaging Supplies",
     "Wrapped Cutlery Kits",
     "250 ct",
-    "7001258"
+    "7001258",
+    "spc-115"
   ],
   [
     "Paper & Packaging Supplies",
     "Thank-You Takeout Bags",
     "1,000 ct",
-    ""
+    "",
+    "spc-116"
   ],
   [
     "Paper & Packaging Supplies",
     "Thermal Receipt Paper Rolls",
     "8 ct (3⅛ in × 230 ft)",
-    ""
+    "",
+    "spc-117"
   ],
   [
     "Cleaning Supplies",
     "Bleach (5.25%)",
     "4 × 1 gal",
-    "8000049"
+    "8000049",
+    "spc-118"
   ],
   [
     "Cleaning Supplies",
     "Terry Cloth Bar Towels",
     "Not specified",
-    ""
+    "",
+    "spc-119"
   ],
   [
     "Cleaning Supplies",
     "58-Gallon Trash Can Liners",
     "80 ct",
-    "6000025"
+    "6000025",
+    "spc-120"
   ],
   [
     "Cleaning Supplies",
     "Dish Detergent",
     "4 × 1 gal",
-    "8000065"
+    "8000065",
+    "spc-121"
   ],
   [
     "Cleaning Supplies",
     "Mop Heads",
     "12 × 32 oz (verify pack description)",
-    "8066636"
+    "8066636",
+    "spc-122"
   ],
   [
     "Cleaning Supplies",
     "Stainless Steel Scrubbers",
     "6 × 12 × 1.75 oz (verify pack description)",
-    "8066621"
+    "8066621",
+    "spc-123"
   ],
   [
     "Beverages — Cans & Water",
     "Diet Pepsi (12 oz. Cans)",
     "24 × 12 oz",
-    "115584"
+    "115584",
+    "spc-124"
   ],
   [
     "Beverages — Cans & Water",
     "Pepsi (12 oz. Cans)",
     "24 × 12 oz",
-    "146533"
+    "146533",
+    "spc-125"
   ],
   [
     "Beverages — Cans & Water",
     "Dr Pepper (12 oz. Cans)",
     "24 × 12 oz",
-    "115583"
+    "115583",
+    "spc-126"
   ],
   [
     "Beverages — Cans & Water",
     "Starry (12 oz. Cans)",
     "24 × 12 oz",
-    "116309"
+    "116309",
+    "spc-127"
   ],
   [
     "Beverages — Cans & Water",
     "Brisk Lemon Iced Tea (12 oz. Cans)",
     "24 × 12 oz",
-    "115586"
+    "115586",
+    "spc-128"
   ],
   [
     "Beverages — Cans & Water",
     "Diet Mountain Dew (12 oz. Cans)",
     "Pack size not specified",
-    "115586"
+    "115586",
+    "spc-129"
   ],
   [
     "Beverages — Cans & Water",
     "Mountain Dew (12 oz. Cans)",
     "24 × 12 oz",
-    "115586"
+    "115586",
+    "spc-130"
   ],
   [
     "Beverages — Cans & Water",
     "Aquafina Water (16.9 oz. Bottles)",
     "24 × 16.9 oz",
-    "115586"
+    "115586",
+    "spc-131"
   ],
   [
     "Beverages — 2-Liter Bottles",
     "Diet Pepsi (2-Liter)",
     "8 × 2 L",
-    "116150"
+    "116150",
+    "spc-132"
   ],
   [
     "Beverages — 2-Liter Bottles",
     "Pepsi (2-Liter)",
     "8 × 2 L",
-    "116366"
+    "116366",
+    "spc-133"
   ],
   [
     "Beverages — 2-Liter Bottles",
     "Dr Pepper (2-Liter)",
     "8 × 2 L",
-    "11/9/62"
+    "11/9/62",
+    "spc-134"
   ],
   [
     "Beverages — 2-Liter Bottles",
     "Starry (2-Liter)",
     "8 × 2 L",
-    "11/7/62"
+    "11/7/62",
+    "spc-135"
   ],
   [
     "Beverages — 2-Liter Bottles",
     "Dole Strawberry Lemonade (2-Liter)",
     "8 × 2 L",
-    "11/24/62"
+    "11/24/62",
+    "spc-136"
   ],
   [
     "Beverages — 2-Liter Bottles",
     "Mountain Dew (2-Liter)",
     "8 × 2 L",
-    "11/17/62"
+    "11/17/62",
+    "spc-137"
   ]
 ];
 
@@ -960,7 +1062,7 @@ const inventory = [
 // Packaging details are separate from the product name. Blank/unverified
 // pack sizes are left unspecified, never silently assumed to be one case.
 function unpackItem(row, index) {
-  const [category, name, casePack, supplierSku] = row;
+  const [category, name, casePack, supplierSku, stableId] = row;
   const originalName = name + " — " + casePack;
   // Preserve the exact supplier case description, including bags, jars and packs.
   // Count entries remain decimal cases; pack descriptions are informational.
@@ -969,7 +1071,7 @@ function unpackItem(row, index) {
   const eachSize = match ? Number(match[2]) : null;
   const sizeUnit = match ? match[3] : "";
   const total = packCount !== null && eachSize !== null ? packCount * eachSize : null;
-  return {id:"spc-"+index,category,name,casePack,originalName,orderUnit:"case",supplierSku,packCount,eachSize,sizeUnit,total};
+  return {id:stableId || "spc-"+index,category,name,casePack,originalName,orderUnit:"case",supplierSku,packCount,eachSize,sizeUnit,total};
 }
 const catalog = inventory.map(unpackItem);
 function packageLabel(item) {
@@ -1014,8 +1116,7 @@ $("inventoryItems").innerHTML = catalog.map((item, index) => {
   return heading + `
     <div class="item">
       <div><strong>${escapeHTML(item.name)}</strong>
-      <small>${escapeHTML(packageLabel(item))}</small>
-      <small>Supplier item: ${escapeHTML(item.supplierSku || "Not listed")}</small></div>
+      <small class="pack-label">${escapeHTML(packageLabel(item))}</small></div>
       <input id="quantity${index}" type="number" min="0" step="any" inputmode="decimal" placeholder="0"
         aria-label="Cases of ${escapeHTML(item.name)}">
     </div>`;
